@@ -283,27 +283,30 @@
         }, 800);
     }, 3500);
 
-    // هێنانی گشت هەواڵە ئابورییەکان بە سەرچاوەی ڕاستەقینەی جێگیر
+    // ڕێگای بنەڕەتی و جیاواز بۆ هێنانی داتا بێ ئەوەی بلۆک بکرێت
     async function loadEconomicCalendar() {
         const tableBody = document.getElementById('economicCalendarTable');
         tableBody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gold-primary font-bold animate-pulse"><i class="fa-solid fa-spinner fa-spin ml-2"></i> خەریکی هێنانی داتای ڕاستەقینەی بازاڕە...</td></tr>`;
 
         try {
-            // بەکارهێنانی corsproxy.io کە زۆر خێرا و ڕاستەقینەیە
-            const response = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://nfs.faireconomy.media/ff_calendar_thisweek.json'));
+            const targetUrl = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
             
-            if (!response.ok) {
-                throw new Error('هەڵە لە وەرگرتنی داتا');
-            }
+            // بەکارهێنانی get لە جیاتی raw بۆ ئەوەی ڕێگرییەکانی سێرڤەر تێپەڕێنین
+            const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+            
+            if (!response.ok) throw new Error('کێشە لە وەرگرتنی داتا هەیە');
 
-            const events = await response.json();
-            tableBody.innerHTML = ''; 
+            const data = await response.json();
+            
+            // داتاکە لەناو contents دایە و دەبێت بیکەینەوە بە JSON
+            const events = JSON.parse(data.contents);
 
             if (!events || events.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gold-light">هیچ هەواڵێک لە ئێستادا بەردەست نییە.</td></tr>`;
                 return;
             }
 
+            tableBody.innerHTML = ''; 
             events.forEach(item => {
                 let impactColor = 'bg-gray-500/10 text-gray-400 border-gray-500/20';
                 if (item.impact === 'High') impactColor = 'bg-red-500/10 text-red-400 border-red-500/20 font-bold';
@@ -333,7 +336,7 @@
 
         } catch (error) {
             console.error('هەڵە:', error);
-            tableBody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-rose-400">تکایە دڵنیابە لەوەی فایلی نوێ پۆست کراوە بۆ گیتهەب و پاشان پەیجی سایتەکە ڕێفریش (Refresh) بکە.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-rose-400">سێرڤەری هەواڵەکان لە ئێستادا وەڵام ناداتەوە، تکایە کەمێکی تر هەوڵ بدەرەوە.</td></tr>`;
         }
     }
 
